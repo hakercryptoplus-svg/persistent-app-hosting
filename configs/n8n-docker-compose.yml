@@ -1,0 +1,98 @@
+version: '3.8'
+
+# N8N Docker Compose Configuration
+# استخدم هذا الملف لنشر n8n مع جميع الإعدادات الموصى بها
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    
+    # المنافذ
+    ports:
+      - "5678:5678"  # واجهة الويب
+    
+    # متغيرات البيئة
+    environment:
+      # إعدادات الخادم
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      
+      # المنطقة الزمنية
+      - GENERIC_TIMEZONE=UTC
+      - TZ=UTC
+      
+      # إعدادات قاعدة البيانات (اختياري)
+      # - DB_TYPE=mysql
+      # - DB_MYSQL_HOST=mysql
+      # - DB_MYSQL_PORT=3306
+      # - DB_MYSQL_DATABASE=n8n
+      # - DB_MYSQL_USER=n8n
+      # - DB_MYSQL_PASSWORD=password
+      
+      # إعدادات الأمان (اختياري)
+      # - N8N_SECURE_COOKIE=true
+      # - N8N_AUTH_BASIC_ENABLED=true
+      # - N8N_AUTH_BASIC_AUTH_ACTIVE=true
+      # - N8N_AUTH_BASIC_AUTH_USER=admin
+      # - N8N_AUTH_BASIC_AUTH_PASSWORD=password
+      
+      # إعدادات التخزين
+      - N8N_ENCRYPTION_KEY=your-secret-key-here
+    
+    # المجلدات
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - /var/run/docker.sock:/var/run/docker.sock
+    
+    # إعادة التشغيل التلقائي
+    restart: always
+    
+    # الشبكة
+    networks:
+      - n8n_network
+    
+    # فحص الصحة
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # الموارد (اختياري)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 2G
+    #     reservations:
+    #       cpus: '1'
+    #       memory: 1G
+
+  # اختياري: قاعدة بيانات MySQL
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: n8n-mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: n8n
+  #     MYSQL_USER: n8n
+  #     MYSQL_PASSWORD: password
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   networks:
+  #     - n8n_network
+  #   restart: always
+
+volumes:
+  n8n_data:
+    driver: local
+  # mysql_data:
+  #   driver: local
+
+networks:
+  n8n_network:
+    driver: bridge

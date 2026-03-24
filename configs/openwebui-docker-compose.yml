@@ -1,0 +1,116 @@
+version: '3.8'
+
+# OpenWebUI Docker Compose Configuration
+# استخدم هذا الملف لنشر OpenWebUI مع Ollama للنماذج المحلية
+
+services:
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: openwebui
+    
+    # المنافذ
+    ports:
+      - "8080:8080"  # واجهة الويب
+    
+    # متغيرات البيئة
+    environment:
+      # إعدادات Ollama
+      - OLLAMA_BASE_URL=http://ollama:11434
+      
+      # إعدادات OpenAI (اختياري)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-https://api.openai.com/v1}
+      
+      # إعدادات أخرى (اختياري)
+      - WEBUI_AUTH=true
+      - WEBUI_AUTH_TRUSTED_EMAIL_HEADER=X-Remote-User
+      
+      # المنطقة الزمنية
+      - TZ=UTC
+    
+    # المجلدات
+    volumes:
+      - openwebui_data:/app/backend/data
+    
+    # إعادة التشغيل التلقائي
+    restart: always
+    
+    # الشبكة
+    networks:
+      - openwebui_network
+    
+    # فحص الصحة
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # الموارد (اختياري)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 2G
+    #     reservations:
+    #       cpus: '1'
+    #       memory: 1G
+    
+    # الاعتماديات
+    depends_on:
+      - ollama
+
+  # Ollama - محرك النماذج المحلية
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    
+    # المنافذ
+    ports:
+      - "11434:11434"  # Ollama API
+    
+    # متغيرات البيئة
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+      - OLLAMA_KEEP_ALIVE=24h
+      - TZ=UTC
+    
+    # المجلدات
+    volumes:
+      - ollama_data:/root/.ollama
+    
+    # إعادة التشغيل التلقائي
+    restart: always
+    
+    # الشبكة
+    networks:
+      - openwebui_network
+    
+    # فحص الصحة
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # الموارد (اختياري - زيادة للنماذج الكبيرة)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '4'
+    #       memory: 8G
+    #     reservations:
+    #       cpus: '2'
+    #       memory: 4G
+
+volumes:
+  openwebui_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  openwebui_network:
+    driver: bridge

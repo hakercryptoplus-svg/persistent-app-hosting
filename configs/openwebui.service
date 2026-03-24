@@ -1,0 +1,40 @@
+[Unit]
+Description=OpenWebUI - Open-source ChatGPT Interface
+Documentation=https://docs.openwebui.com/
+After=docker.service network.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=%h/openwebui
+
+# بدء الخدمة
+ExecStart=/usr/bin/docker-compose up
+
+# إيقاف الخدمة
+ExecStop=/usr/bin/docker-compose down
+
+# إعادة التشغيل التلقائي
+Restart=always
+RestartSec=10
+
+# المهلة الزمنية للبدء
+StartLimitInterval=60
+StartLimitBurst=3
+
+# متغيرات البيئة
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="DOCKER_HOST=unix:///var/run/docker.sock"
+
+# الحدود
+LimitNOFILE=65536
+LimitNPROC=65536
+
+# السجلات
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openwebui
+
+[Install]
+WantedBy=multi-user.target
