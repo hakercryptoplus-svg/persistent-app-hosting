@@ -1,0 +1,22 @@
+{
+  "name": "SSH Enabled Codespace",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
+  },
+  "postCreateCommand": "echo 'codespace:MySSHPass123!' | sudo chpasswd && sudo service ssh start",
+  "forwardPorts": [22],
+  "portsAttributes": {
+    "22": {
+      "label": "SSH",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-vscode.remote-ssh"]
+    }
+  }
+}
