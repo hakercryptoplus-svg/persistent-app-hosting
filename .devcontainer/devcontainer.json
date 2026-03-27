@@ -6,12 +6,17 @@
       "version": "latest"
     }
   },
-  "postCreateCommand": "echo 'codespace:MySSHPass123!' | sudo chpasswd && sudo service ssh start",
-  "forwardPorts": [22],
+  "postCreateCommand": "echo 'codespace:MySSHPass123!' | sudo chpasswd && sudo service ssh start && sudo apt-get update && sudo apt-get install -y ttyd && nohup ttyd -p 7681 bash > /tmp/ttyd.log 2>&1 &",
+  "forwardPorts": [22, 7681],
   "portsAttributes": {
     "22": {
       "label": "SSH",
       "onAutoForward": "notify"
+    },
+    "7681": {
+      "label": "ttyd Web Terminal",
+      "onAutoForward": "notify",
+      "visibility": "public"
     }
   },
   "customizations": {
